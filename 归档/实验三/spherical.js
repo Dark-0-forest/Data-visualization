@@ -1,3 +1,9 @@
+/**
+ * @name        spherical.js
+ * @author      Fu Ming
+ * @Time        2020/10/13 23:29
+ * @description 绘制球面（半径为5）
+ */
 const echarts = require('echarts');
 const echartsGL = require('echarts-gl');
 // 基于准备好的dom，初始化echarts实例
