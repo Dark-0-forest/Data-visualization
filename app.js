@@ -1,47 +1,42 @@
+/**
+ * @name        2D_Gaussian_surface.js
+ * @author      Fu Ming
+ * @Time        2020/10/13 23:49
+ * @description 绘制二元正态分布曲面
+ */
 const echarts = require('echarts');
 const echartsGL = require('echarts-gl');
 // 基于准备好的dom，初始化echarts实例
 const myChart = echarts.init(document.getElementById('main'));
+
+function makeGaussian(amplitude, x0, y0, sigmaX, sigmaY) {
+    return function (amplitude, x0, y0, sigmaX, sigmaY, x, y) {
+        const exponent = -(
+            (Math.pow(x - x0, 2) / (2 * Math.pow(sigmaX, 2)))
+            + (Math.pow(y - y0, 2) / (2 * Math.pow(sigmaY, 2)))
+        );
+        return amplitude * Math.pow(Math.E, exponent);
+    }.bind(null, amplitude, x0, y0, sigmaX, sigmaY);
+}
+
+// 创建一个高斯分布函数
+const gaussian = makeGaussian(50, 0, 0, 20, 20);
+const data = [];
+// 曲面图要求给入的数据是网格形式按顺序分布。
+for (let y = -50; y <= 50; y++) {
+    for (let x = -50; x <= 50; x++) {
+        const z = gaussian(x, y);
+        data.push([x, y, z]);
+    }
+}
 option = {
-    tooltip: {},
-    visualMap: {
-        show: false,
-        dimension: 2,
-        min: -1,
-        max: 1,
-        inRange: {
-            color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
-        }
-    },
+    grid3D: {},
     xAxis3D: {},
     yAxis3D: {},
-    zAxis3D: {},
-    grid3D: {},
+    zAxis3D: {max: 60},
     series: [{
         type: 'surface',
-        parametric: true,
-        // shading: 'albedo',
-        parametricEquation: {
-            u: {
-                min: -Math.PI,
-                max: Math.PI,
-                step: Math.PI / 20
-            },
-            v: {
-                min: 0,
-                max: Math.PI,
-                step: Math.PI / 20
-            },
-            x: function (u, v) {
-                return 5 * Math.sin(v) * Math.sin(u);
-            },
-            y: function (u, v) {
-                return 5 * Math.sin(v) * Math.cos(u);
-            },
-            z: function (u, v) {
-                return 5 * Math.cos(v);
-            }
-        }
+        data: data
     }]
-};
+}
 myChart.setOption(option);
