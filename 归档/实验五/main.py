@@ -7,7 +7,7 @@ Time    : 2020/10/15 20:09
 Desc    :
 """
 import openpyxl
-from pyecharts.charts import HeatMap, Grid
+from pyecharts.charts import HeatMap
 import pyecharts.globals as globals
 from pyecharts import options as opts
 from pyecharts.charts import Pie
