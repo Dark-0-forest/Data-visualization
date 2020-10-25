@@ -4,7 +4,7 @@
 Name    : main.py
 Author  : Fu Ming
 Time    : 2020/10/15 20:09
-Desc    :
+Desc    : 数据可视化实验五
 """
 import openpyxl
 from pyecharts.charts import HeatMap
@@ -36,7 +36,7 @@ def genHeatBaseData():
 
 def classifyHeatMap(xAxisData: list, yAxisData: list, data: list):
     HeatMap(init_opts=opts.InitOpts(width="2000px", height="2000px")).add_xaxis(xaxis_data=xAxisData).add_yaxis(
-        series_name="Punch Card",
+        series_name="classifyHeatMap",
         yaxis_data=yAxisData,
         value=data,
         label_opts=opts.LabelOpts(
@@ -60,7 +60,14 @@ def classifyHeatMap(xAxisData: list, yAxisData: list, data: list):
             ),
         ),
         visualmap_opts=opts.VisualMapOpts(
-            min_=0, max_=10, is_calculable=True, orient="horizontal", pos_left="center"
+            orient="horizontal", pos_left="center", is_piecewise=True,
+            pieces=[
+                {"value": 2, "label": 'waiter'},
+                {"value": 4, "label": 'vip'},
+                {"value": 6, "label": 'participant'},
+                {"value": 8, "label": 'meeting'},
+                {"value": 10, "label": 'reporter'},
+            ]
         ),
     ).render("classifyHeatMap.html")
 
@@ -145,6 +152,7 @@ def drawRoomData2Pie():
     pie.render("roomTime.html")
 
 
-# 1:休息区 2:嘉宾休息区 3:休息区 4:记者区 5:黑客竞赛现场 6：工作人员休息区
-drawClassifyHeatMap()
-drawRoomData2Pie()
+if __name__ == '__main__':
+    # 1:休息区 2:嘉宾休息区 3:休息区 4:记者区 5:黑客竞赛现场 6：工作人员休息区
+    # drawClassifyHeatMap()
+    drawRoomData2Pie()
