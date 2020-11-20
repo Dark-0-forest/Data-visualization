@@ -1,73 +1,89 @@
 import pandas as pd
 from pyecharts import options as opts
 from pyecharts.commons.utils import JsCode
-from pyecharts.charts import HeatMap, Tab, Bar
+from pyecharts.charts import Parallel, Tab, Bar
 
 df1 = pd.read_excel("classifyday1.xlsx")
 df2 = pd.read_excel("time_allocate_day1.xlsx")
 
+# 选项卡
 tab = Tab()
 # 用字典来对每种工作赋值
 job = {'waiter': 0, 'vip': 1, 'participant': 2, 'meeting': 3, 'reporter': 4}
-"""处理人员分类的热力图"""
-# 获取两位的横坐标
-x = []
-for i in range(100):
-        fmt = str("{:0>2d}".format(i))
-        x.append(fmt)
-# 对excel中的文件读取，获得画图用的坐标
+
+"""1.处理人员分类的热力图"""
+# 对excel中的文件读取，获得每个ID对应的类别
 classfication_origin = {}
-classfication = []
 for line in df1.groupby("id"):
     line_list = line[1].values
     job_num = job[line_list[0][1]]
     classfication_origin[line_list[0][0]] = line_list[0][1]
-    classfication.append([int(str(line_list[0][0])[3:]), int(str(line_list[0][0])[:3]), job_num])
-# 每个类别用不同的颜色标识
-pieces = [
-        {'max': 0, 'min': 0, 'label': 'waiter', 'color': '#228B22'},
-        {'max': 1, 'min': 1, 'label': 'vip', 'color': '#FF0000'},
-        {'max': 2, 'min': 2, 'label': 'participant', 'color': '#0099CC'},
-        {'max': 3, 'min': 3, 'label': 'meeting', 'color': '#FF9966'},
-        {'max': 4, 'min': 4, 'label': 'reporter', 'color': '#8B008B'}
-    ]
-# 创建热力图
-heatmap = (
-    HeatMap(init_opts=opts.InitOpts(width="1400px", height="1400px"))
-    .add_xaxis(x)
-    .add_yaxis(
-        series_name="类别",
-        yaxis_data=(range(100, 200)),
-        value=classfication,
-    )
-    .set_global_opts(
-        visualmap_opts=opts.VisualMapOpts(is_piecewise=True, pieces=pieces, pos_top="35%"),
-        xaxis_opts=opts.AxisOpts(
-            type_="category",
-            splitarea_opts=opts.SplitAreaOpts(
-                is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
-            ),
-            axislabel_opts=opts.LabelOpts(
-                font_size=8,
-                interval=0
-            )
-        ),
-        yaxis_opts=opts.AxisOpts(
-            type_="category",
-            splitarea_opts=opts.SplitAreaOpts(
-                is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
-            ),
-            axislabel_opts=opts.LabelOpts(
-                font_size=8,
-                interval=0
-            )
-        ),
-    )
-)
-# 把热力图添加到整个tab上
-tab.add(heatmap, "人员分类热力图")
 
-"""每类人员在不同房间的停留时间比例的折线图"""
+scheme = [
+            opts.ParallelAxisOpts(dim=0, name="分会场A"),
+            opts.ParallelAxisOpts(dim=1, name="分会场B"),
+            opts.ParallelAxisOpts(dim=2, name="分会场C"),
+            opts.ParallelAxisOpts(dim=3, name="分会场D"),
+            opts.ParallelAxisOpts(dim=4, name="主会场"),
+            opts.ParallelAxisOpts(dim=5, name="room1"),
+            opts.ParallelAxisOpts(dim=6, name="room2"),
+            opts.ParallelAxisOpts(dim=7, name="room3"),
+            opts.ParallelAxisOpts(dim=8, name="room4"),
+            opts.ParallelAxisOpts(dim=9, name="room5"),
+            opts.ParallelAxisOpts(dim=10, name="room6"),
+            opts.ParallelAxisOpts(dim=11, name="餐厅"),
+            opts.ParallelAxisOpts(dim=12, name="厕所1"),
+            opts.ParallelAxisOpts(dim=13, name="厕所2"),
+            opts.ParallelAxisOpts(dim=14, name="厕所3"),
+            opts.ParallelAxisOpts(dim=15, name="服务台"),
+            opts.ParallelAxisOpts(dim=16, name="过道1楼"),
+            opts.ParallelAxisOpts(dim=17, name="过道2楼"),
+            opts.ParallelAxisOpts(dim=18, name="楼梯"),
+            opts.ParallelAxisOpts(dim=19, name="海报区"),
+            opts.ParallelAxisOpts(dim=20, name="签到处"),
+            opts.ParallelAxisOpts(dim=21, name="休息处"), ]
+
+# 获取不同类别人员id的数据信息
+data_all = []
+data_meeting = []
+data_participant = []
+data_vip = []
+data_waiter = []
+data_reporter = []
+for line in df2.value_counts().index:
+    data_all.append(line[1:])
+    if classfication_origin[line[0]] == "meeting":
+        data_meeting.append(line[1:])
+    elif classfication_origin[line[0]] == "participant":
+        data_participant.append(line[1:])
+    elif classfication_origin[line[0]] == "vip":
+        data_vip.append(line[1:])
+    elif classfication_origin[line[0]] == "waiter":
+        data_waiter.append(line[1:])
+    elif classfication_origin[line[0]] == "reporter":
+        data_reporter.append(line[1:])
+
+parallel1 = (
+    Parallel(init_opts=opts.InitOpts(width="1600px", height="700px"))
+    .add_schema(scheme)
+    .add("data", data_all, linestyle_opts=opts.LineStyleOpts(opacity=0.05))
+)
+
+parallel2 = (
+    Parallel(init_opts=opts.InitOpts(width="1600px", height="700px"))
+    .add_schema(scheme)
+    .add("reporter", data_reporter, linestyle_opts=opts.LineStyleOpts(opacity=0.3))
+    .add("waiter", data_waiter, linestyle_opts=opts.LineStyleOpts(opacity=0.3))
+    .add("vip", data_vip, linestyle_opts=opts.LineStyleOpts(opacity=0.2))
+    .add("meeting", data_meeting, linestyle_opts=opts.LineStyleOpts(opacity=0.1))
+    .add("participant", data_participant, linestyle_opts=opts.LineStyleOpts(opacity=0.2))
+)
+
+tab.add(parallel1, "人员类别分析图(无类别)")
+tab.add(parallel2, "人员类别分析图(有类别)")
+
+
+"""2.每类人员在不同房间的停留时间比例的折线图"""
 # test = pd.read_excel("time_allocate_day1 - test.xlsx")
 room_stay_time = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 for line in df2.groupby("id"):
@@ -90,6 +106,7 @@ data = []
 for i in range(0, 6):
     room_total_time.append(sum(num[i] for num in room_stay_time))
 
+# 求出每一种人员对于room的访问时间占比，同时将其访问时间按比例缩小1000
 for i in range(0, 5):
     num = sum(room_stay_time[i])
     rate = []
@@ -100,6 +117,7 @@ for i in range(0, 5):
     room_stay_time_rate.append(rate)
     room_stay_time_thousand.append(thousand)
 
+# 为bar填充数据，同时保存其值和对应的占比
 for i in range(0, 5):
     y = []
     for j in range(0, 6):
