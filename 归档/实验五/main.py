@@ -7,7 +7,7 @@ Time    : 2020/10/15 20:09
 Desc    : 数据可视化实验五
 """
 import openpyxl
-from pyecharts.charts import HeatMap
+from pyecharts.charts import HeatMap, Parallel
 import pyecharts.globals as globals
 from pyecharts import options as opts
 from pyecharts.charts import Pie
@@ -23,6 +23,46 @@ def getClassifyData():
         row = str(i)
         classifyData.append([ws['A' + row].value, ws['B' + row].value])
     return classifyData
+
+
+# 从表格读取数据
+def getRoomData():
+    filename = "time_allocate_day1.xlsx"
+    ws = openpyxl.load_workbook(filename)['time_allocate_day1']
+    roomData, roomName = [], []
+    for room in range(24):
+        roomName.append(
+            opts.ParallelAxisOpts(dim=room, name=ws[chr(room + 65) + '1'].value, min_='dataMin', max_='dataMax'))
+    for i in range(2, ws.max_row + 1):
+        row, person = str(i), []
+        for room in range(24):
+            person.append(ws[chr(room + 65) + row].value)
+        roomData.append(person)
+    return roomData, roomName
+
+
+# 不同人员平行坐标系图
+def drawRoomDataParallel():
+    roomData, roomName = getRoomData()
+    c = (
+        Parallel(init_opts=opts.InitOpts(width="2000px", height="1000px")).add_schema(
+            roomName).add(series_name="人员分类图",
+                          data=roomData,
+                          linestyle_opts=opts.LineStyleOpts(color={'type': 'linear', 'x': 0,
+                                                                   'y': 0,
+                                                                   'x2': 0,
+                                                                   'y2': 1,
+                                                                   'colorStops': [{
+                                                                       'offset': 0, 'color': 'red'
+                                                                   }, {
+                                                                       'offset': 1,
+                                                                       'color': 'blue'
+                                                                   }],
+                                                                   'global': False
+                                                                   }, opacity=0.5)
+                          ).set_global_opts(title_opts=opts.TitleOpts(title="数据可视化实验五"))
+    )
+    c.render("不同人员平行坐标系图.html")
 
 
 def genHeatBaseData():
@@ -153,6 +193,8 @@ def drawRoomData2Pie():
 
 
 if __name__ == '__main__':
+    # drawClassifyHeatMap() # 热力图是在已知人员分类的情况下画出来的，但是第一问的前提是不知道人员分类
+    # 用平行坐标系画图
+    drawRoomDataParallel()
     # 1:休息区 2:嘉宾休息区 3:休息区 4:记者区 5:黑客竞赛现场 6：工作人员休息区
-    # drawClassifyHeatMap()
     drawRoomData2Pie()
